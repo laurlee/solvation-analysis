@@ -12,6 +12,7 @@ as their input and generating a Plotly.Figure object.
 
 import plotly
 import plotly.graph_objects as go
+from plotly.subplots import make_subplots
 import plotly.express as px
 import matplotlib
 from copy import deepcopy
@@ -280,3 +281,48 @@ def compare_rdfs(solutions, atoms):
     # can atom groups be matched to solutions / universes behind the scenes?
     # yes we can use atom.u is universe
     return
+
+def plot_rdfs(solute, x_axis):
+    rdf_data = solute.rdf_data
+    df = pd.DataFrame()
+    dataframes = {}
+    for atom_solute_name in rdf_data:
+        for solvent in rdf_data[atom_solute_name]:
+            temp = pd.DataFrame(data=rdf_data[atom_solute_name][solvent])
+            temp = temp.transpose()
+            temp.columns = ["bins", "rdf"]
+            temp["solvent"] = solvent
+            temp["atom solute"] = atom_solute_name
+            dataframes[(atom_solute_name, solvent)] = temp[["bins", "rdf"]]
+            df = pd.concat([df, temp])
+
+    atom_solutes, solvents = zip(*dataframes.keys());
+
+    atom_solutes = set(atom_solutes)
+    solvents = set(solvents)
+
+    fig = go.Figure()
+    if x_axis == "atom solute":
+        fig = make_subplots(rows=len(atom_solutes), cols=len(solvents))
+
+        r = 1
+        for atom_solute in atom_solutes:
+            c = 1
+            for solvent in solvents:
+                data = dataframes[(atom_solute, solvent)]
+                fig.add_trace(go.Scatter(x=data["bins"], y=data["rdf"]), row=r, col=c)
+                c += 1
+            r += 1
+    elif x_axis == "solvent":
+        fig = make_subplots(rows=len(solvents), cols=len(atom_solutes))
+
+        r = 1
+        for solvent in solvents:
+            c = 1
+            for atom_solute in atom_solutes:
+                data = dataframes[(atom_solute, solvent)]
+                fig.add_trace(go.Scatter(x=data["bins"], y=data["rdf"]), row=r, col=c)
+                c += 1
+            r += 1
+
+    return fig

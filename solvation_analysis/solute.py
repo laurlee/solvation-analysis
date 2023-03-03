@@ -141,7 +141,7 @@ class Solute(AnalysisBase):
     By default, Solute will determine the coordination cutoff
     radii from the Solute-solvent RDF. Radii can also be supplied
     with the radii parameter. The RDF's of each solute-solvent
-    pari can be visualize with the plot_solvation_radius method.
+    pari can be visualized with the plot_solvation_radius method.
 
     Solute instantiates Speciation, Coordination, and Pairing
     objects from the solvation_data, providing a convenient interface for
@@ -201,7 +201,7 @@ class Solute(AnalysisBase):
         a dataframe of solvation data with columns "frame", "solute_atom", "solvent_atom",
         "distance", "solvent_name", and "solvent". If multiple entries share a frame, solute_atom,
         and solvent_atom, all but the closest atom is dropped.
-    solvation_data_dupicates : pandas.DataFrame
+    solvation_data_duplicates : pandas.DataFrame
         All rows that are dropped from solvation_data when duplicates are dropped.
     solute_res_ix : np.array
         a numpy array of the residue indices of every solute.
