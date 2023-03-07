@@ -167,53 +167,31 @@ def test_compare_residence_times_instantiation_exception(eax_solutes):
                                       title="Bar Graph of Residence Times")
 
 
-
-def test(iba_small_solute):
-    rdf_data = iba_small_solute.rdf_data
-    df = pd.DataFrame()
-    atom_solute_names = []
-    #solvents = []
-    dataframes = {}
-    for atom_solute_name in rdf_data:
-        for solvent in rdf_data[atom_solute_name]:
-            # temp_dict =
-
-            # solvents.append(solvent)
-            temp = pd.DataFrame(data=rdf_data[atom_solute_name][solvent])
-            temp = temp.transpose()
-            temp.columns = ["bins", "rdf"]
-            temp["solvent"] = solvent
-            temp["atom solute"] = atom_solute_name
-            dataframes[(atom_solute_name, solvent)] = temp[["bins", "rdf"]]
-            df = pd.concat([df, temp])
-        atom_solute_names.append(atom_solute_name)
-
-    # print("hi")
-
-    atom_solutes, solvents = zip(*dataframes.keys());
-    # print("hi")
-
-    atom_solutes = set(atom_solutes)
-    solvents = set(solvents)
-
-    fig = make_subplots(rows=len(atom_solutes), cols=len(solvents))
-
-    r = 1
-    for atom_solute in atom_solutes:
-        c = 1
-        for solvent in solvents:
-            data = dataframes[(atom_solute, solvent)]
-            fig.add_trace(go.Scatter(x=data["bins"], y=data["rdf"]), row=r, col=c)
-            c += 1
-        r += 1
-    fig.show()
-
-
-def test_plot_rdfs_case1(iba_small_solute):
+def test_plot_rdfs_case1_no_clasp(iba_small_solute):
     fig = plot_rdfs(iba_small_solute, "atom solute")
     fig.show()
 
 
-def test_plot_rdfs_case2(iba_small_solute):
+def test_plot_rdfs_case2_no_clasp(iba_small_solute):
     fig = plot_rdfs(iba_small_solute, "solvent")
     fig.show()
+
+
+def test_plot_rdfs_atom_solute_clasp_x_axis(iba_small_solute):
+    fig = plot_rdfs(iba_small_solute, "atom solute", "x")
+    fig.show()
+
+
+def test_plot_rdfs_solvent_clasp_x_axis(iba_small_solute):
+    fig = plot_rdfs(iba_small_solute, "solvent", "x")
+    fig.show()
+
+
+def test_plot_rdfs_atom_solute_clasp_y_axis(iba_small_solute):
+    fig = plot_rdfs(iba_small_solute, "atom solute", "y")
+    fig.show()
+
+def test_plot_rdfs_solvent_clasp_y_axis(iba_small_solute):
+    fig = plot_rdfs(iba_small_solute, "solvent", "y")
+    fig.show()
+

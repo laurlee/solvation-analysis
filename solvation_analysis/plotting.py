@@ -273,23 +273,19 @@ def compare_residence_times(solutions, res_type="residence_times_fit", rename_so
     return fig
 
 
-# TODO: work on rdfs; make them tiled
-# this will have to be implemented post-merge
-# use iba_small_solutes (will return a solute that has three atom solutes
-# solvents are on one axis and solutions are on the other
 def compare_rdfs(solutions, atoms):
     # can atom groups be matched to solutions / universes behind the scenes?
     # yes we can use atom.u is universe
     return
 
-def plot_rdfs(solute, x_axis):
+
+def plot_rdfs(solute, x_axis, clasp=None):
     rdf_data = solute.rdf_data
     df = pd.DataFrame()
     dataframes = {}
     for atom_solute_name in rdf_data:
         for solvent in rdf_data[atom_solute_name]:
-            temp = pd.DataFrame(data=rdf_data[atom_solute_name][solvent])
-            temp = temp.transpose()
+            temp = pd.DataFrame(data=rdf_data[atom_solute_name][solvent]).transpose()
             temp.columns = ["bins", "rdf"]
             temp["solvent"] = solvent
             temp["atom solute"] = atom_solute_name
@@ -301,20 +297,40 @@ def plot_rdfs(solute, x_axis):
     atom_solutes = set(atom_solutes)
     solvents = set(solvents)
 
+    # TODO: check subset of df
     fig = go.Figure()
-    if x_axis == "atom solute":
-        fig = make_subplots(rows=len(atom_solutes), cols=len(solvents))
-
+    # 2x3 grid --> 2x1 grid, each graph has three traces
+    if clasp == "x" and x_axis == "atom solute":
+        fig = make_subplots(rows=len(atom_solutes), cols=1, x_title="Atom Solute")
         r = 1
         for atom_solute in atom_solutes:
-            c = 1
-            for solvent in solvents:
-                data = dataframes[(atom_solute, solvent)]
-                fig.add_trace(go.Scatter(x=data["bins"], y=data["rdf"]), row=r, col=c)
-                c += 1
+            temp = df.loc[df["atom solute"] == atom_solute]
+            fig.add_trace(go.Scatter(x=temp["bins"], y=temp["rdf"]), row=r, col=1)
+            fig.update_xaxes(title_text=atom_solute, row=r, col=1)
             r += 1
-    elif x_axis == "solvent":
-        fig = make_subplots(rows=len(solvents), cols=len(atom_solutes))
+    # 3x2 grid --> 3x1 grid, each graph has two traces
+    elif clasp == "x" and x_axis == "solvent":
+        fig = make_subplots(rows=1, cols=len(atom_solutes), x_title="Solvent")
+        c = 1
+        for solvent in solvents:
+            temp = df.loc[df["solvent"] == solvent]
+            fig.add_trace(go.Scatter(x=temp["bins"], y=temp["rdf"]), row=1, col=c)
+            fig.update_xaxes(title_text=solvent, row=1, col=c)
+            c += 1
+    # 2x3 grid --> 1x3 grid, each graph has two traces
+    elif clasp == "y" and x_axis == "atom solute":
+        fig = make_subplots(rows=len(solvents), cols=len(atom_solutes), x_title="Atom Solute")
+        c = 1
+        for atom_solute in atom_solutes:
+            temp = df.loc[df["atom solute"] == atom_solute]
+            fig.add_trace(go.Scatter(x=temp["bins"], y=temp["rdf"]), row=1, col=c)
+            fig.update_xaxes(title_text=atom_solute, row=1, col=c)
+            c += 1
+    # 3x2 grid --> 1x2 grid, each graph has three traces
+    elif clasp == "y" and x_axis == "solvent":
+        print("need to work on this")
+    elif x_axis == "atom solute":
+        fig = make_subplots(rows=len(solvents), cols=len(atom_solutes), shared_xaxes=True, shared_yaxes=True, x_title="Atom Solute", y_title="Solvent")
 
         r = 1
         for solvent in solvents:
@@ -322,7 +338,23 @@ def plot_rdfs(solute, x_axis):
             for atom_solute in atom_solutes:
                 data = dataframes[(atom_solute, solvent)]
                 fig.add_trace(go.Scatter(x=data["bins"], y=data["rdf"]), row=r, col=c)
+                fig.update_xaxes(title_text=atom_solute, row=r, col=c)
+                fig.update_yaxes(title_text=solvent, row=r, col=c)
+                c += 1
+            r += 1
+    elif x_axis == "solvent":
+        fig = make_subplots(rows=len(atom_solutes), cols=len(solvents), shared_xaxes=True, shared_yaxes=True, x_title="Solvent", y_title="Atom Solute")
+
+        r = 1
+        for atom_solute in atom_solutes:
+            c = 1
+            for solvent in solvents:
+                data = dataframes[(atom_solute, solvent)]
+                fig.add_trace(go.Scatter(x=data["bins"], y=data["rdf"]), row=r, col=c)
+                fig.update_xaxes(title_text=solvent, row=r, col=c)
+                fig.update_yaxes(title_text=atom_solute, row=r, col=c)
                 c += 1
             r += 1
 
+    fig.update_layout(showlegend=False, template="simple_white")
     return fig
